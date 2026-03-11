@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monthly Expense Summary</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 480px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: white;
+      padding: 2rem;
+    }
+
+    .card-header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .card-header p {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      margin-top: 0.25rem;
+    }
+
+    .expense-list {
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .expense-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.875rem 0.75rem;
+      border-radius: 10px;
+      transition: background 0.15s;
+    }
+
+    .expense-item:hover {
+      background: #f8f8fc;
+    }
+
+    .expense-left {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+    }
+
+    .icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .icon.rent        { background: #ede9fe; }
+    .icon.food        { background: #fef3c7; }
+    .icon.transport   { background: #dbeafe; }
+    .icon.subs        { background: #fce7f3; }
+    .icon.misc        { background: #d1fae5; }
+
+    .expense-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .expense-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .expense-note {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-top: 1px;
+    }
+
+    .expense-amount {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    .divider {
+      height: 1px;
+      background: #f0f0f5;
+      margin: 0 2rem;
+    }
+
+    .total-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2.75rem 1.75rem;
+    }
+
+    .total-label {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    .total-amount {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #4f46e5;
+    }
+
+    .bar-section {
+      padding: 0 2rem 1.75rem;
+    }
+
+    .bar-section h2 {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #9ca3af;
+      margin-bottom: 0.875rem;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .bar-label {
+      font-size: 0.8rem;
+      color: #6b7280;
+      width: 90px;
+      flex-shrink: 0;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 8px;
+      background: #f0f0f5;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+    }
+
+    .bar-fill.rent      { background: #7c3aed; }
+    .bar-fill.food      { background: #f59e0b; }
+    .bar-fill.transport { background: #3b82f6; }
+    .bar-fill.subs      { background: #ec4899; }
+    .bar-fill.misc      { background: #10b981; }
+
+    .bar-pct {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #9ca3af;
+      width: 36px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <h1>Monthly Expenses</h1>
+      <p>March 2026</p>
+    </div>
+
+    <div class="expense-list">
+      <div class="expense-item">
+        <div class="expense-left">
+          <div class="icon rent">🏠</div>
+          <div class="expense-info">
+            <span class="expense-name">Rent</span>
+            <span class="expense-note">Monthly lease</span>
+          </div>
+        </div>
+        <span class="expense-amount">$1,850.00</span>
+      </div>
+
+      <div class="expense-item">
+        <div class="expense-left">
+          <div class="icon food">🍔</div>
+          <div class="expense-info">
+            <span class="expense-name">Food</span>
+            <span class="expense-note">Groceries &amp; dining out</span>
+          </div>
+        </div>
+        <span class="expense-amount">$620.00</span>
+      </div>
+
+      <div class="expense-item">
+        <div class="expense-left">
+          <div class="icon transport">🚗</div>
+          <div class="expense-info">
+            <span class="expense-name">Transport</span>
+            <span class="expense-note">Gas, transit &amp; parking</span>
+          </div>
+        </div>
+        <span class="expense-amount">$210.00</span>
+      </div>
+
+      <div class="expense-item">
+        <div class="expense-left">
+          <div class="icon subs">📱</div>
+          <div class="expense-info">
+            <span class="expense-name">Subscriptions</span>
+            <span class="expense-note">Streaming, software &amp; gym</span>
+          </div>
+        </div>
+        <span class="expense-amount">$145.00</span>
+      </div>
+
+      <div class="expense-item">
+        <div class="expense-left">
+          <div class="icon misc">🛍️</div>
+          <div class="expense-info">
+            <span class="expense-name">Miscellaneous</span>
+            <span class="expense-note">Clothing, gifts &amp; other</span>
+          </div>
+        </div>
+        <span class="expense-amount">$175.00</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="total-row">
+      <span class="total-label">Total Spent</span>
+      <span class="total-amount">$3,000.00</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="bar-section" style="margin-top: 1.25rem;">
+      <h2>Breakdown</h2>
+
+      <div class="bar-row">
+        <span class="bar-label">Rent</span>
+        <div class="bar-track"><div class="bar-fill rent" style="width: 61.7%"></div></div>
+        <span class="bar-pct">61.7%</span>
+      </div>
+
+      <div class="bar-row">
+        <span class="bar-label">Food</span>
+        <div class="bar-track"><div class="bar-fill food" style="width: 20.7%"></div></div>
+        <span class="bar-pct">20.7%</span>
+      </div>
+
+      <div class="bar-row">
+        <span class="bar-label">Transport</span>
+        <div class="bar-track"><div class="bar-fill transport" style="width: 7%"></div></div>
+        <span class="bar-pct">7.0%</span>
+      </div>
+
+      <div class="bar-row">
+        <span class="bar-label">Subscriptions</span>
+        <div class="bar-track"><div class="bar-fill subs" style="width: 4.8%"></div></div>
+        <span class="bar-pct">4.8%</span>
+      </div>
+
+      <div class="bar-row">
+        <span class="bar-label">Misc</span>
+        <div class="bar-track"><div class="bar-fill misc" style="width: 5.8%"></div></div>
+        <span class="bar-pct">5.8%</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
