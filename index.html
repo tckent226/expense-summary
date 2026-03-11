@@ -5,303 +5,504 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Monthly Expense Summary</title>
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #f0f2f5;
       color: #1a1a2e;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       padding: 2rem;
     }
 
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    @media (max-width: 780px) {
+      .page { grid-template-columns: 1fr; }
+    }
+
+    /* ── Shared card ── */
     .card {
-      background: #ffffff;
+      background: #fff;
       border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-      width: 100%;
-      max-width: 480px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
       overflow: hidden;
     }
 
     .card-header {
       background: linear-gradient(135deg, #4f46e5, #7c3aed);
       color: white;
-      padding: 2rem;
+      padding: 1.75rem 2rem;
     }
+    .card-header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; }
+    .card-header p  { font-size: 0.875rem; opacity: 0.8; margin-top: 0.2rem; }
 
-    .card-header h1 {
-      font-size: 1.4rem;
+    .section-header {
+      font-size: 0.72rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      padding: 1.25rem 2rem 0.5rem;
     }
 
-    .card-header p {
-      font-size: 0.875rem;
-      opacity: 0.8;
-      margin-top: 0.25rem;
-    }
-
-    .expense-list {
-      padding: 1.5rem 2rem;
+    /* ── Summary list ── */
+    .summary-list {
+      padding: 0.5rem 1.25rem 0.75rem;
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.1rem;
     }
 
-    .expense-item {
+    .summary-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.875rem 0.75rem;
+      padding: 0.7rem 0.5rem;
       border-radius: 10px;
       transition: background 0.15s;
+      cursor: default;
     }
+    .summary-item:hover { background: #f8f8fc; }
 
-    .expense-item:hover {
-      background: #f8f8fc;
-    }
-
-    .expense-left {
-      display: flex;
-      align-items: center;
-      gap: 0.875rem;
-    }
+    .item-left { display: flex; align-items: center; gap: 0.75rem; }
 
     .icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      flex-shrink: 0;
+      width: 38px; height: 38px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.05rem; flex-shrink: 0;
     }
+    .icon.rent          { background: #ede9fe; }
+    .icon.food          { background: #fef3c7; }
+    .icon.transport     { background: #dbeafe; }
+    .icon.subscriptions { background: #fce7f3; }
+    .icon.misc          { background: #d1fae5; }
 
-    .icon.rent        { background: #ede9fe; }
-    .icon.food        { background: #fef3c7; }
-    .icon.transport   { background: #dbeafe; }
-    .icon.subs        { background: #fce7f3; }
-    .icon.misc        { background: #d1fae5; }
+    .item-name  { font-size: 0.9rem; font-weight: 600; color: #1a1a2e; }
+    .item-count { font-size: 0.75rem; color: #9ca3af; margin-top: 1px; }
+    .item-amount { font-size: 0.9rem; font-weight: 700; color: #374151; }
 
-    .expense-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .expense-name {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #1a1a2e;
-    }
-
-    .expense-note {
-      font-size: 0.78rem;
-      color: #9ca3af;
-      margin-top: 1px;
-    }
-
-    .expense-amount {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #374151;
-    }
-
-    .divider {
-      height: 1px;
-      background: #f0f0f5;
-      margin: 0 2rem;
-    }
+    .divider { height: 1px; background: #f0f0f5; margin: 0 1.5rem; }
 
     .total-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.25rem 2.75rem 1.75rem;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.75rem 1.25rem;
     }
+    .total-label  { font-size: 0.95rem; font-weight: 700; color: #374151; }
+    .total-amount { font-size: 1.2rem; font-weight: 800; color: #4f46e5; }
 
-    .total-label {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #374151;
-    }
+    /* ── Bar chart ── */
+    .bar-section { padding: 0 1.5rem 1.5rem; }
 
-    .total-amount {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: #4f46e5;
-    }
-
-    .bar-section {
-      padding: 0 2rem 1.75rem;
-    }
-
-    .bar-section h2 {
-      font-size: 0.78rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: #9ca3af;
-      margin-bottom: 0.875rem;
-    }
-
-    .bar-row {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.6rem;
-    }
-
-    .bar-label {
-      font-size: 0.8rem;
-      color: #6b7280;
-      width: 90px;
-      flex-shrink: 0;
-    }
-
+    .bar-row { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.55rem; }
+    .bar-label { font-size: 0.78rem; color: #6b7280; width: 88px; flex-shrink: 0; }
     .bar-track {
-      flex: 1;
-      height: 8px;
-      background: #f0f0f5;
-      border-radius: 99px;
-      overflow: hidden;
+      flex: 1; height: 7px;
+      background: #f0f0f5; border-radius: 99px; overflow: hidden;
+    }
+    .bar-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+    .bar-fill.rent          { background: #7c3aed; }
+    .bar-fill.food          { background: #f59e0b; }
+    .bar-fill.transport     { background: #3b82f6; }
+    .bar-fill.subscriptions { background: #ec4899; }
+    .bar-fill.misc          { background: #10b981; }
+    .bar-pct { font-size: 0.75rem; font-weight: 600; color: #9ca3af; width: 34px; text-align: right; flex-shrink: 0; }
+
+    /* ── Right column ── */
+    .right-col { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    /* ── Add expense form ── */
+    .form-body { padding: 1.25rem 1.75rem 1.75rem; display: flex; flex-direction: column; gap: 0.875rem; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    label { display: block; font-size: 0.75rem; font-weight: 600; color: #6b7280; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    input, select {
+      width: 100%; padding: 0.6rem 0.75rem;
+      border: 1.5px solid #e5e7eb; border-radius: 8px;
+      font-size: 0.9rem; color: #1a1a2e;
+      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none;
+    }
+    input:focus, select:focus {
+      outline: none; border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
     }
 
-    .bar-fill {
-      height: 100%;
-      border-radius: 99px;
+    .btn-add {
+      width: 100%; padding: 0.7rem;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: white; border: none; border-radius: 9px;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-add:hover { opacity: 0.92; }
+    .btn-add:active { transform: scale(0.98); }
+
+    .toast {
+      display: none;
+      background: #d1fae5; color: #065f46;
+      border-radius: 8px; padding: 0.6rem 0.875rem;
+      font-size: 0.82rem; font-weight: 600;
+    }
+    .toast.show { display: block; }
+
+    /* ── History ── */
+    .filter-bar {
+      display: flex; gap: 0.4rem; flex-wrap: wrap;
+      padding: 0.75rem 1.75rem 0;
     }
 
-    .bar-fill.rent      { background: #7c3aed; }
-    .bar-fill.food      { background: #f59e0b; }
-    .bar-fill.transport { background: #3b82f6; }
-    .bar-fill.subs      { background: #ec4899; }
-    .bar-fill.misc      { background: #10b981; }
+    .filter-btn {
+      padding: 0.35rem 0.75rem;
+      border-radius: 99px; border: 1.5px solid #e5e7eb;
+      background: #fff; font-size: 0.78rem; font-weight: 600;
+      color: #6b7280; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: #c4b5fd; color: #4f46e5; }
+    .filter-btn.active { background: #4f46e5; border-color: #4f46e5; color: #fff; }
 
-    .bar-pct {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: #9ca3af;
-      width: 36px;
-      text-align: right;
-      flex-shrink: 0;
+    .history-list {
+      padding: 0.75rem 1.25rem 1.25rem;
+      display: flex; flex-direction: column; gap: 0.15rem;
+      max-height: 420px; overflow-y: auto;
+    }
+    .history-list::-webkit-scrollbar { width: 4px; }
+    .history-list::-webkit-scrollbar-track { background: transparent; }
+    .history-list::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 99px; }
+
+    .history-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.65rem 0.5rem; border-radius: 9px;
+      transition: background 0.12s;
+    }
+    .history-item:hover { background: #f8f8fc; }
+
+    .h-left { display: flex; align-items: center; gap: 0.65rem; }
+
+    .h-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; flex-shrink: 0;
+    }
+    .h-icon.rent          { background: #ede9fe; }
+    .h-icon.food          { background: #fef3c7; }
+    .h-icon.transport     { background: #dbeafe; }
+    .h-icon.subscriptions { background: #fce7f3; }
+    .h-icon.misc          { background: #d1fae5; }
+
+    .h-name { font-size: 0.875rem; font-weight: 600; color: #1a1a2e; }
+    .h-date { font-size: 0.73rem; color: #9ca3af; margin-top: 1px; }
+
+    .h-right { text-align: right; }
+    .h-amount { font-size: 0.875rem; font-weight: 700; color: #374151; }
+
+    .cat-badge {
+      display: inline-block;
+      font-size: 0.66rem; font-weight: 700;
+      padding: 0.15rem 0.45rem; border-radius: 99px;
+      margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .cat-badge.rent          { background: #ede9fe; color: #6d28d9; }
+    .cat-badge.food          { background: #fef3c7; color: #92400e; }
+    .cat-badge.transport     { background: #dbeafe; color: #1d4ed8; }
+    .cat-badge.subscriptions { background: #fce7f3; color: #9d174d; }
+    .cat-badge.misc          { background: #d1fae5; color: #065f46; }
+
+    .empty-state {
+      text-align: center; padding: 2rem 1rem;
+      color: #9ca3af; font-size: 0.875rem;
     }
   </style>
 </head>
 <body>
-  <div class="card">
+<div class="page">
+
+  <!-- LEFT: Summary -->
+  <div class="card" id="summary-card">
     <div class="card-header">
       <h1>Monthly Expenses</h1>
-      <p>March 2026</p>
+      <p id="summary-month">March 2026</p>
     </div>
 
-    <div class="expense-list">
-      <div class="expense-item">
-        <div class="expense-left">
-          <div class="icon rent">🏠</div>
-          <div class="expense-info">
-            <span class="expense-name">Rent</span>
-            <span class="expense-note">Monthly lease</span>
-          </div>
-        </div>
-        <span class="expense-amount">$1,850.00</span>
-      </div>
-
-      <div class="expense-item">
-        <div class="expense-left">
-          <div class="icon food">🍔</div>
-          <div class="expense-info">
-            <span class="expense-name">Food</span>
-            <span class="expense-note">Groceries &amp; dining out</span>
-          </div>
-        </div>
-        <span class="expense-amount">$620.00</span>
-      </div>
-
-      <div class="expense-item">
-        <div class="expense-left">
-          <div class="icon transport">🚗</div>
-          <div class="expense-info">
-            <span class="expense-name">Transport</span>
-            <span class="expense-note">Gas, transit &amp; parking</span>
-          </div>
-        </div>
-        <span class="expense-amount">$210.00</span>
-      </div>
-
-      <div class="expense-item">
-        <div class="expense-left">
-          <div class="icon subs">📱</div>
-          <div class="expense-info">
-            <span class="expense-name">Subscriptions</span>
-            <span class="expense-note">Streaming, software &amp; gym</span>
-          </div>
-        </div>
-        <span class="expense-amount">$145.00</span>
-      </div>
-
-      <div class="expense-item">
-        <div class="expense-left">
-          <div class="icon misc">🛍️</div>
-          <div class="expense-info">
-            <span class="expense-name">Miscellaneous</span>
-            <span class="expense-note">Clothing, gifts &amp; other</span>
-          </div>
-        </div>
-        <span class="expense-amount">$175.00</span>
-      </div>
-    </div>
+    <div class="section-header">By Category</div>
+    <div class="summary-list" id="summary-list"></div>
 
     <div class="divider"></div>
-
     <div class="total-row">
       <span class="total-label">Total Spent</span>
-      <span class="total-amount">$3,000.00</span>
+      <span class="total-amount" id="summary-total">$0.00</span>
     </div>
-
     <div class="divider"></div>
 
-    <div class="bar-section" style="margin-top: 1.25rem;">
-      <h2>Breakdown</h2>
+    <div class="section-header" style="padding-bottom: 0.75rem;">Breakdown</div>
+    <div class="bar-section" id="bar-section"></div>
+  </div>
 
-      <div class="bar-row">
-        <span class="bar-label">Rent</span>
-        <div class="bar-track"><div class="bar-fill rent" style="width: 61.7%"></div></div>
-        <span class="bar-pct">61.7%</span>
+  <!-- RIGHT: Form + History -->
+  <div class="right-col">
+
+    <!-- Add Expense -->
+    <div class="card">
+      <div class="card-header" style="padding: 1.4rem 2rem;">
+        <h1 style="font-size: 1.1rem;">Add Expense</h1>
       </div>
-
-      <div class="bar-row">
-        <span class="bar-label">Food</span>
-        <div class="bar-track"><div class="bar-fill food" style="width: 20.7%"></div></div>
-        <span class="bar-pct">20.7%</span>
-      </div>
-
-      <div class="bar-row">
-        <span class="bar-label">Transport</span>
-        <div class="bar-track"><div class="bar-fill transport" style="width: 7%"></div></div>
-        <span class="bar-pct">7.0%</span>
-      </div>
-
-      <div class="bar-row">
-        <span class="bar-label">Subscriptions</span>
-        <div class="bar-track"><div class="bar-fill subs" style="width: 4.8%"></div></div>
-        <span class="bar-pct">4.8%</span>
-      </div>
-
-      <div class="bar-row">
-        <span class="bar-label">Misc</span>
-        <div class="bar-track"><div class="bar-fill misc" style="width: 5.8%"></div></div>
-        <span class="bar-pct">5.8%</span>
+      <div class="form-body">
+        <div>
+          <label for="f-desc">Description</label>
+          <input id="f-desc" type="text" placeholder="e.g. Trader Joe's" />
+        </div>
+        <div class="form-row">
+          <div>
+            <label for="f-cat">Category</label>
+            <select id="f-cat">
+              <option value="rent">🏠 Rent</option>
+              <option value="food" selected>🍔 Food</option>
+              <option value="transport">🚗 Transport</option>
+              <option value="subscriptions">📱 Subscriptions</option>
+              <option value="misc">🛍️ Miscellaneous</option>
+            </select>
+          </div>
+          <div>
+            <label for="f-amount">Amount ($)</label>
+            <input id="f-amount" type="number" placeholder="0.00" min="0.01" step="0.01" />
+          </div>
+        </div>
+        <div>
+          <label for="f-date">Date</label>
+          <input id="f-date" type="date" />
+        </div>
+        <button class="btn-add" onclick="addExpense()">Add Expense</button>
+        <div class="toast" id="toast">Expense added successfully!</div>
       </div>
     </div>
+
+    <!-- History -->
+    <div class="card">
+      <div class="card-header" style="padding: 1.4rem 2rem;">
+        <h1 style="font-size: 1.1rem;">Expense History</h1>
+        <p id="history-count" style="opacity:0.8; font-size:0.82rem; margin-top:0.2rem;"></p>
+      </div>
+      <div class="filter-bar" id="filter-bar"></div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+
   </div>
+</div>
+
+<script>
+  const CATEGORIES = {
+    rent:          { label: 'Rent',          icon: '🏠', color: '#7c3aed' },
+    food:          { label: 'Food',          icon: '🍔', color: '#f59e0b' },
+    transport:     { label: 'Transport',     icon: '🚗', color: '#3b82f6' },
+    subscriptions: { label: 'Subscriptions', icon: '📱', color: '#ec4899' },
+    misc:          { label: 'Miscellaneous', icon: '🛍️', color: '#10b981' },
+  };
+
+  const SEED_EXPENSES = [
+    // Rent
+    { id: 1,  desc: 'Monthly Rent',           cat: 'rent',          amount: 1850.00, date: '2026-03-01' },
+    // Food
+    { id: 2,  desc: 'Whole Foods',            cat: 'food',          amount: 185.00,  date: '2026-03-02' },
+    { id: 3,  desc: 'Chipotle',               cat: 'food',          amount: 14.50,   date: '2026-03-05' },
+    { id: 4,  desc: 'Trader Joe\'s',          cat: 'food',          amount: 92.00,   date: '2026-03-08' },
+    { id: 5,  desc: 'Dinner — Olive Garden',  cat: 'food',          amount: 62.00,   date: '2026-03-10' },
+    { id: 6,  desc: 'Instacart Delivery',     cat: 'food',          amount: 78.00,   date: '2026-03-14' },
+    { id: 7,  desc: 'Starbucks',              cat: 'food',          amount: 24.00,   date: '2026-03-18' },
+    { id: 8,  desc: 'Costco Run',             cat: 'food',          amount: 118.50,  date: '2026-03-21' },
+    { id: 9,  desc: 'Sushi Night',            cat: 'food',          amount: 46.00,   date: '2026-03-25' },
+    // Transport
+    { id: 10, desc: 'Shell Gas Station',      cat: 'transport',     amount: 65.00,   date: '2026-03-03' },
+    { id: 11, desc: 'Parking Garage',         cat: 'transport',     amount: 18.00,   date: '2026-03-07' },
+    { id: 12, desc: 'Uber',                   cat: 'transport',     amount: 22.00,   date: '2026-03-11' },
+    { id: 13, desc: 'Chevron Gas',            cat: 'transport',     amount: 58.00,   date: '2026-03-15' },
+    { id: 14, desc: 'Lyft',                   cat: 'transport',     amount: 14.00,   date: '2026-03-19' },
+    { id: 15, desc: 'Monthly Bus Pass',       cat: 'transport',     amount: 33.00,   date: '2026-03-01' },
+    // Subscriptions
+    { id: 16, desc: 'Netflix',                cat: 'subscriptions', amount: 17.00,   date: '2026-03-01' },
+    { id: 17, desc: 'Spotify',                cat: 'subscriptions', amount: 11.00,   date: '2026-03-01' },
+    { id: 18, desc: 'iCloud Storage',         cat: 'subscriptions', amount: 3.00,    date: '2026-03-01' },
+    { id: 19, desc: 'Adobe Creative Cloud',   cat: 'subscriptions', amount: 55.00,   date: '2026-03-01' },
+    { id: 20, desc: 'Gym Membership',         cat: 'subscriptions', amount: 45.00,   date: '2026-03-01' },
+    { id: 21, desc: 'YouTube Premium',        cat: 'subscriptions', amount: 14.00,   date: '2026-03-01' },
+    // Misc
+    { id: 22, desc: 'Amazon — Desk Lamp',     cat: 'misc',          amount: 43.00,   date: '2026-03-06' },
+    { id: 23, desc: 'Birthday Gift',          cat: 'misc',          amount: 55.00,   date: '2026-03-09' },
+    { id: 24, desc: 'Home Supplies',          cat: 'misc',          amount: 38.00,   date: '2026-03-16' },
+    { id: 25, desc: 'New Shirt',              cat: 'misc',          amount: 39.00,   date: '2026-03-22' },
+  ];
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let expenses = loadExpenses();
+  let activeFilter = 'all';
+  let nextId = expenses.reduce((m, e) => Math.max(m, e.id), 0) + 1;
+
+  function loadExpenses() {
+    try {
+      const stored = localStorage.getItem('expenses');
+      return stored ? JSON.parse(stored) : [...SEED_EXPENSES];
+    } catch { return [...SEED_EXPENSES]; }
+  }
+
+  function saveExpenses() {
+    localStorage.setItem('expenses', JSON.stringify(expenses));
+  }
+
+  // ── Formatting ─────────────────────────────────────────────────────────────
+  function fmt(n) {
+    return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function fmtDate(iso) {
+    const [y, m, d] = iso.split('-');
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  // ── Render Summary ─────────────────────────────────────────────────────────
+  function renderSummary() {
+    const totals = {};
+    const counts = {};
+    Object.keys(CATEGORIES).forEach(k => { totals[k] = 0; counts[k] = 0; });
+    expenses.forEach(e => { totals[e.cat] += e.amount; counts[e.cat]++; });
+    const grand = Object.values(totals).reduce((a, b) => a + b, 0);
+
+    // List
+    const list = document.getElementById('summary-list');
+    list.innerHTML = Object.entries(CATEGORIES).map(([key, cat]) => `
+      <div class="summary-item">
+        <div class="item-left">
+          <div class="icon ${key}">${cat.icon}</div>
+          <div>
+            <div class="item-name">${cat.label}</div>
+            <div class="item-count">${counts[key]} transaction${counts[key] !== 1 ? 's' : ''}</div>
+          </div>
+        </div>
+        <span class="item-amount">${fmt(totals[key])}</span>
+      </div>
+    `).join('');
+
+    // Total
+    document.getElementById('summary-total').textContent = fmt(grand);
+
+    // Bars
+    const bars = document.getElementById('bar-section');
+    bars.innerHTML = Object.entries(CATEGORIES).map(([key, cat]) => {
+      const pct = grand > 0 ? (totals[key] / grand * 100) : 0;
+      return `
+        <div class="bar-row">
+          <span class="bar-label">${key === 'subscriptions' ? 'Subs' : cat.label}</span>
+          <div class="bar-track"><div class="bar-fill ${key}" style="width:${pct.toFixed(1)}%"></div></div>
+          <span class="bar-pct">${pct.toFixed(1)}%</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ── Render Filter Bar ──────────────────────────────────────────────────────
+  function renderFilterBar() {
+    const bar = document.getElementById('filter-bar');
+    const allFilters = [{ key: 'all', label: 'All' }, ...Object.entries(CATEGORIES).map(([k, v]) => ({ key: k, label: v.label }))];
+    bar.innerHTML = allFilters.map(f => `
+      <button class="filter-btn ${activeFilter === f.key ? 'active' : ''}" onclick="setFilter('${f.key}')">${f.label}</button>
+    `).join('');
+  }
+
+  // ── Render History ─────────────────────────────────────────────────────────
+  function renderHistory() {
+    const filtered = activeFilter === 'all'
+      ? expenses
+      : expenses.filter(e => e.cat === activeFilter);
+
+    const sorted = [...filtered].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+
+    const list = document.getElementById('history-list');
+    const count = document.getElementById('history-count');
+
+    count.textContent = `${filtered.length} transaction${filtered.length !== 1 ? 's' : ''}`;
+
+    if (sorted.length === 0) {
+      list.innerHTML = '<div class="empty-state">No expenses found.</div>';
+      return;
+    }
+
+    list.innerHTML = sorted.map(e => {
+      const cat = CATEGORIES[e.cat];
+      return `
+        <div class="history-item">
+          <div class="h-left">
+            <div class="h-icon ${e.cat}">${cat.icon}</div>
+            <div>
+              <div class="h-name">${e.desc}</div>
+              <div class="h-date">${fmtDate(e.date)}</div>
+            </div>
+          </div>
+          <div class="h-right">
+            <div class="h-amount">${fmt(e.amount)}</div>
+            <span class="cat-badge ${e.cat}">${cat.label}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function setFilter(key) {
+    activeFilter = key;
+    renderFilterBar();
+    renderHistory();
+  }
+
+  // ── Add Expense ────────────────────────────────────────────────────────────
+  function addExpense() {
+    const desc   = document.getElementById('f-desc').value.trim();
+    const cat    = document.getElementById('f-cat').value;
+    const amount = parseFloat(document.getElementById('f-amount').value);
+    const date   = document.getElementById('f-date').value;
+
+    if (!desc)           { alert('Please enter a description.'); return; }
+    if (!date)           { alert('Please select a date.'); return; }
+    if (isNaN(amount) || amount <= 0) { alert('Please enter a valid amount.'); return; }
+
+    expenses.push({ id: nextId++, desc, cat, amount, date });
+    saveExpenses();
+
+    // Reset form
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-amount').value = '';
+
+    renderSummary();
+    renderFilterBar();
+    renderHistory();
+
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // Allow Enter key to submit
+  ['f-desc', 'f-amount', 'f-date'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') addExpense();
+    });
+  });
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  // Default date to today
+  document.getElementById('f-date').value = new Date().toISOString().slice(0, 10);
+
+  renderSummary();
+  renderFilterBar();
+  renderHistory();
+</script>
 </body>
 </html>
